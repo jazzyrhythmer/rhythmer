@@ -1,7 +1,7 @@
-import {mountSmkControls} from './smk-controls.mjs?v=20261126.1';
+import {mountSmkControls} from './smk-controls.mjs?v=20261126.2';
 // SPDX-License-Identifier: GPL-3.0-only
 import {mountConsent,requireConsent,downloadBackup,ready as consentReady} from './start-consent.mjs?v=20261126.1';
-import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.3';
+import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.4';
 import {mountProgress} from './progress.mjs?v=installer-20261126.1';
 import {fetchChecked} from './network.mjs?v=installer-20261126.1';
 const $=s=>document.querySelector(s);mountConsent();
