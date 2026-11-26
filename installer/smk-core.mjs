@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {Package,logicalImage,sha256hex} from './fm1pkg.js?v=installer-20261126.1';
+import {smkStagingImage} from './smk-staging.mjs?v=20261126.5';
 import {UniqueUpdater} from './discovery.mjs?v=installer-20261126.3';
 import {BackupConnection,captureBackup} from './fm1backup.js?v=installer-20261126.1';
 const ensure=(ok,message)=>{if(!ok)throw Error(message);};
@@ -20,6 +21,10 @@ export async function validateSmk(bytes,meta){
 }
 export class SmkUpdater extends UniqueUpdater{
  get deviceModel(){return 'SMK-37 Pro';}
+ async serve(link,image,finish,idle,onProgress,phase='stage'){
+  const payload=phase==='stage'?smkStagingImage(image):image;
+  return super.serve(link,payload,finish,idle,onProgress,phase);
+ }
  async find(filter,opts){
   const found=await super.find(filter,opts);
   if(found&&this.expected){const e=this.expected;this.expected=null;if(found.id.text!==e.id.text||found.link.input.id!==e.input.id||found.link.output.id!==e.output.id){found.link.close();throw Error('Keyboard changed before transfer. Reconnect and start again.');}}

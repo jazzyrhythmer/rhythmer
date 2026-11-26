@@ -1,14 +1,14 @@
 import {mountSmkControls} from './smk-controls.mjs?v=20261126.2';
 // SPDX-License-Identifier: GPL-3.0-only
 import {mountConsent,requireConsent,downloadBackup,ready as consentReady} from './start-consent.mjs?v=20261126.1';
-import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.4';
+import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.5';
 import {mountProgress} from './progress.mjs?v=installer-20261126.1';
 import {fetchChecked} from './network.mjs?v=installer-20261126.1';
 const $=s=>document.querySelector(s);mountConsent();
-let meta,target,up,lastScan=null,working=false,writing=false,writeStarted=false,release,channel,heartbeat,backupURL;
+let meta,target,up,lastScan=null,lastError=null,working=false,writing=false,writeStarted=false,release,channel,heartbeat,backupURL;
 const progress=mountProgress($('#transfer-status')),events=[],checkpointKey='smk37-install-checkpoint-v1';
 const status=message=>{if(up?.lastScan)lastScan=up.lastScan;$('#result').textContent=message;events.push({at:new Date().toISOString(),message});$('#log').textContent=events.map(x=>x.at+' '+x.message).join('\n');};
-function report(){return {installerRevision:'smk37-one-start-20261126.1',target:meta,events,writeMayHaveStarted:writeStarted,midiPorts:lastScan,physicalJackTested:false};}
+function report(){return {installerRevision:'smk37-one-start-20261126.5',target:meta,events,writeMayHaveStarted:writeStarted,midiPorts:lastScan,lastRequest:up?.lastRequest||lastError?.lastRequest||null,error:lastError,physicalJackTested:false};}
 $('#report').onclick=()=>{const a=$('#report');if(a.dataset.object)URL.revokeObjectURL(a.dataset.object);a.href=a.dataset.object=URL.createObjectURL(new Blob([JSON.stringify(report(),null,2)],{type:'application/json'}));a.download='SMK37-install-report.json';};
 for(const id of ['sample-brief','v15-recommendation','install-compatibility','connect','disconnect','backup','stock-file','stock-status','review','recovery-download']){const x=$('#'+id);if(x)x.hidden=true;}
 // Keep model-specific safety and controls together. Unrelated FM-1 recovery options are not shown here.
@@ -31,7 +31,7 @@ function close(){up?.close();up=null;clearInterval(heartbeat);channel?.postMessa
 function onStep(stage,n,detail){const id={start:'stage',verify:'stage',loader:'loader','write-start':'write',write:'write',reboot:'reboot',done:'identity'}[stage];if(!id)return;if(detail)progress.packet(id,detail,n);else progress.enter(id,'SMK-37 Pro: '+stage+'. Keep power and USB connected.');$('#smk-status').textContent=progress.model.detail;}
 $('#start').onclick=async()=>{
  if(working||!target)return;try{requireConsent();}catch(e){status(e.message);$('#start-consent').scrollIntoView();return;}
- working=true;writeStarted=false;$('#start').disabled=true;$('#transfer-status').scrollIntoView({behavior:'smooth',block:'start'});progress.begin({mode:'rhythmer'});
+ working=true;writeStarted=false;lastError=null;$('#start').disabled=true;$('#transfer-status').scrollIntoView({behavior:'smooth',block:'start'});progress.begin({mode:'rhythmer'});
  try{
   if(!isSecureContext||!navigator.requestMIDIAccess)throw Error('Use desktop Chrome or Edge over HTTPS.');
   await lock();channel=new BroadcastChannel('jiant-midi');const announce=()=>channel?.postMessage({type:'installer',busy:true});announce();heartbeat=setInterval(announce,4000);
@@ -49,7 +49,7 @@ $('#start').onclick=async()=>{
   if(source.kind==='loader'){if(!await up.resume(target.image,onStep,target.product))throw Error('Matching loader not found.');}else await up.install(target.image,target.product,onStep);
   progress.enter('final','Checking restarted firmware and embedded samples.');await verifySmkBanks(up,meta);
   localStorage.removeItem(checkpointKey);progress.finish(meta.name+' installed; identity and sample banks verified.');status(meta.name+' installed and reconnected. Check physical keys, pads, faders, audio and TRS MIDI OUT next.');
- }catch(e){progress.fail(e.message);status('Stopped: '+e.message+(writing?' Firmware may already be written. Save the report and inspect before retrying.':' No firmware write was started.'));}
+ }catch(e){lastError={message:e.message,code:e.code||null,phase:e.phase||null,served:e.served??null,detail:e.detail||null,lastRequest:up?.lastRequest||null};progress.fail(e.message);status('Stopped: '+e.message+(writing?' Firmware may already be written. Save the report and inspect before retrying.':' No firmware write was started.'));}
  finally{writing=false;working=false;close();$('#start').disabled=!consentReady();}
 };
 window.addEventListener('beforeunload',e=>{if(writing){e.preventDefault();e.returnValue='Installation in progress.';}else close();});

@@ -126,3 +126,7 @@ While booted and stopped, holding OCTAVE − and + for about five seconds reques
 ## Source and credits
 
 Port by Jazzy Rhythmer. Rhythmer is based on JIANT/Felucca and credits its original authors and engines in the included license/source files. SMK board wiring, input, display and LED layer are adapted from [genkigenki/Felucca, smk37 branch](https://github.com/genkigenki/Felucca/tree/smk37), using the [FM-1 to SMK-37 porting reference](https://github.com/genkigenki/fm1-to-smk37). Original author/license notices are retained. The source archive contains the conditional target and build scripts; `VALIDATION.json` records the exact software-check status and package hash.
+
+## Updating between these two OSes
+
+Open the target OS’s SMK web installer, keep the current firmware installed and complete the initial checklist. The installer exports the current musical archive before staging the new loader. There is no required stock-firmware detour. Switching Rhythmer ↔ Jazzy initializes the shared project/settings store; keep the downloaded backup. Use the current package, which supports earlier SMK update-entry code.
