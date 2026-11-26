@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {Package,logicalImage,sha256hex} from './fm1pkg.js?v=installer-20261126.1';
-import {Updater,PORT_RE} from './transport.mjs?v=installer-20261126.1';
+import {UniqueUpdater} from './discovery.mjs?v=installer-20261126.3';
 import {BackupConnection,captureBackup} from './fm1backup.js?v=installer-20261126.1';
 const ensure=(ok,message)=>{if(!ok)throw Error(message);};
 export const same=(a,b)=>a.id.text===b.id.text&&a.input.id===b.input.id&&a.output.id===b.output.id&&a.name===b.name;
@@ -18,12 +18,11 @@ export async function validateSmk(bytes,meta){
  ensure(p.product===meta.product&&p.flash.length===meta.flashBytes&&p.entries.some(x=>x.type===100),'Wrong SMK package layout or model.');
  return {product:p.product,image:logicalImage(bytes),sha256:meta.sha256};
 }
-export class SmkUpdater extends Updater{
+export class SmkUpdater extends UniqueUpdater{
+ get deviceModel(){return 'SMK-37 Pro';}
  async find(filter,opts){
-  const live=g=>[...g.values()].filter(p=>p.state!=='disconnected'&&PORT_RE.test(p.name||''));
-  ensure(live(this.access.inputs).length<=1&&live(this.access.outputs).length<=1,'Connect only one keyboard. Disconnect other FM-1/SMK MIDI endpoints.');
-  const found=await super.find(filter,{...opts,others:false});
-  if(found&&this.expected){const e=this.expected;this.expected=null;ensure(found.id.text===e.id.text&&found.link.input.id===e.input.id&&found.link.output.id===e.output.id,'Keyboard changed before transfer. Reconnect and start again.');}
+  const found=await super.find(filter,opts);
+  if(found&&this.expected){const e=this.expected;this.expected=null;if(found.id.text!==e.id.text||found.link.input.id!==e.input.id||found.link.output.id!==e.output.id){found.link.close();throw Error('Keyboard changed before transfer. Reconnect and start again.');}}
   return found;
  }
 }

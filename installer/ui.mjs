@@ -3,7 +3,7 @@ mountConsent();
 import {fetchChecked} from './network.mjs?v=installer-20261126.1';
 import {INSTALLER_REVISION,validateOfficial,recoveryPolicy,stockName,deviceSummary,environment,failureDetails} from './install-safety.mjs?v=installer-20261126.1';
 // SPDX-License-Identifier: GPL-3.0-only
-import {DeviceUpdater,inspect,backup,authorize,validateStockPackage,validateInstallBundle,transfer,verifyRhythmer,verifyEmbeddedBanks,confirmSource} from './core.mjs?v=installer-20261126.1';
+import {DeviceUpdater,inspect,backup,authorize,validateStockPackage,validateInstallBundle,transfer,verifyRhythmer,verifyEmbeddedBanks,confirmSource} from './core.mjs?v=installer-20261126.3';
 import {mountProgress} from './progress.mjs?v=installer-20261126.1';
 const $=s=>document.querySelector(s),mode=new URLSearchParams(location.search).get('mode')==='stock'?'stock':'rhythmer';
 let manifest,target,recovery,source,up,access,officialOverride=null,lastError=null,working=false,writing=false,backupReady=false,bundleReady=false,releaseLock,heartbeat,channel;

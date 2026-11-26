@@ -1,6 +1,6 @@
 import {recoveryPolicy} from './install-safety.mjs?v=installer-20261116.1';
 // SPDX-License-Identifier: GPL-3.0-only
-import {Updater,PORT_RE,pairOutput,fail} from './transport.mjs?v=installer-20261126.1';
+import {UniqueUpdater} from './discovery.mjs?v=installer-20261126.3';
 import {Package,logicalImage,sha256hex,validateStockPackage} from './fm1pkg.js?v=installer-20261116.1';
 import {BackupConnection,captureBackup,bkPack,bkCrc} from './fm1backup.js?v=installer-20261116.1';
 import {parseInfo} from './midi.mjs?v=installer-20261116.1';
@@ -77,13 +77,9 @@ export async function validateInstallBundle(bytes,manifest){
  ensure(b.audioRights?.publicRedistributionCleared===false&&b.audioRights.samples?.length===2&&b.audioRights.samples.every((x,i)=>x.slotSHA256===manifest.loops[i].sha256&&x.status==='clearance-not-documented'),'Missing or incompatible audio rights notice.');
  return {firmware,recovery,loops,audioRights:b.audioRights};
 }
-const candidate=p=>p.state!=='disconnected'&&(PORT_RE.test(p.name||'')||/rhythmer/i.test(p.name||''));
-export class DeviceUpdater extends Updater{
+export class DeviceUpdater extends UniqueUpdater{
  async write(ota,image,step){step('write-start',ota.id.text);return super.write(ota,image,step);}
  async find(filter,opts){
-  // Conservatively refuse multiple endpoints rather than risk updating the wrong unit.
-  const ins=[...this.access.inputs.values()].filter(candidate),outs=[...this.access.outputs.values()].filter(candidate);
-  if(ins.length>1||outs.length>1)throw fail('ambiguous','Connect only one FM-1; close duplicate MIDI endpoints before continuing.',JSON.stringify({inputs:ins.map(p=>p.name),outputs:outs.map(p=>p.name)}));
   const found=await super.find(filter,{...opts,others:false});
   if(found&&this.expectedFirst){const s=this.expectedFirst;this.expectedFirst=null;try{ensure(found.id.text===s.id.text&&found.link.input.id===s.input.id&&found.link.output.id===s.output.id,'Device changed at upgrade entry. Inspect and back up again.');}catch(e){found.link.close();throw e;}}
   return found;

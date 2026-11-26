@@ -1,14 +1,14 @@
 import {mountSmkControls} from './smk-controls.mjs?v=20261126.1';
 // SPDX-License-Identifier: GPL-3.0-only
 import {mountConsent,requireConsent,downloadBackup,ready as consentReady} from './start-consent.mjs?v=20261126.1';
-import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.1';
+import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.3';
 import {mountProgress} from './progress.mjs?v=installer-20261126.1';
 import {fetchChecked} from './network.mjs?v=installer-20261126.1';
 const $=s=>document.querySelector(s);mountConsent();
-let meta,target,up,working=false,writing=false,writeStarted=false,release,channel,heartbeat,backupURL;
+let meta,target,up,lastScan=null,working=false,writing=false,writeStarted=false,release,channel,heartbeat,backupURL;
 const progress=mountProgress($('#transfer-status')),events=[],checkpointKey='smk37-install-checkpoint-v1';
-const status=message=>{$('#result').textContent=message;events.push({at:new Date().toISOString(),message});$('#log').textContent=events.map(x=>x.at+' '+x.message).join('\n');};
-function report(){return {installerRevision:'smk37-one-start-20261126.1',target:meta,events,writeMayHaveStarted:writeStarted,physicalJackTested:false};}
+const status=message=>{if(up?.lastScan)lastScan=up.lastScan;$('#result').textContent=message;events.push({at:new Date().toISOString(),message});$('#log').textContent=events.map(x=>x.at+' '+x.message).join('\n');};
+function report(){return {installerRevision:'smk37-one-start-20261126.1',target:meta,events,writeMayHaveStarted:writeStarted,midiPorts:lastScan,physicalJackTested:false};}
 $('#report').onclick=()=>{const a=$('#report');if(a.dataset.object)URL.revokeObjectURL(a.dataset.object);a.href=a.dataset.object=URL.createObjectURL(new Blob([JSON.stringify(report(),null,2)],{type:'application/json'}));a.download='SMK37-install-report.json';};
 for(const id of ['sample-brief','v15-recommendation','install-compatibility','connect','disconnect','backup','stock-file','stock-status','review','recovery-download']){const x=$('#'+id);if(x)x.hidden=true;}
 // Keep model-specific safety and controls together. Unrelated FM-1 recovery options are not shown here.
