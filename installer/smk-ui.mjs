@@ -1,3 +1,4 @@
+import {mountSmkControls} from './smk-controls.mjs?v=20261126.1';
 // SPDX-License-Identifier: GPL-3.0-only
 import {mountConsent,requireConsent,downloadBackup,ready as consentReady} from './start-consent.mjs?v=20261126.1';
 import {SmkUpdater,validateSmk,inspectSmk,authorizeSmk,backupSmk,same,verifySmkBanks} from './smk-core.mjs?v=20261126.1';
@@ -22,6 +23,7 @@ $('#start-title').textContent='Your keyboard. The same OS.';$('#start-descriptio
 $('#start-label').textContent='SMK-37 PRO / TEST CANDIDATE';$('.eyebrow').textContent='SMK-37 PRO / 1.16 = v016';
 document.querySelectorAll('.rhy-install-options,.install-options').forEach(x=>x.hidden=true);
 for(const p of [...document.querySelectorAll('main > .notice')])if(p!==tools&&p.id!=='start-consent'&&!p.querySelector('[aria-label="Keyboard model"]')&&!p.matches('nav'))p.hidden=true;
+mountSmkControls();
 async function checked(meta){const r=await fetchChecked(meta.url,{cache:'no-store'});if(!r.ok)throw Error('SMK firmware download unavailable.');return validateSmk(new Uint8Array(await r.arrayBuffer()),meta);}
 const checkpoint=()=>{try{return JSON.parse(localStorage.getItem(checkpointKey));}catch{return null;}};
 async function lock(){if(!navigator.locks)throw Error('Use current desktop Chrome or Edge.');await new Promise((resolve,reject)=>navigator.locks.request('rhythmer-device-operation',{ifAvailable:true},async l=>{if(!l){reject(Error('Another installer or editor owns the keyboard. Close it first.'));return;}await new Promise(r=>{release=r;resolve();});}).catch(reject));}
