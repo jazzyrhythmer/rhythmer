@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // V15/V16 validation follows JIANT's pinned official-package checks.
 import {validateStockPackage} from './fm1pkg.js?v=installer-20261116.1';
-export const INSTALLER_REVISION='installer-20261116.1';
+export const INSTALLER_REVISION='installer-20261126.1';
 export const STOCK_V16={product:'FM-1_016',bytes:718196,sha256:'d017fb65e70aca97ee29d944470c3515a74581df5c0576bf70de917c7b2b61d5'};
 export const stockName=p=>p==='FM-1_016'?'Official V16':'Official V15';
 export async function validateOfficial(bytes){return validateStockPackage(bytes,true);}

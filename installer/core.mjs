@@ -1,6 +1,6 @@
 import {recoveryPolicy} from './install-safety.mjs?v=installer-20261116.1';
 // SPDX-License-Identifier: GPL-3.0-only
-import {Updater,PORT_RE,pairOutput,fail} from './transport.mjs?v=installer-20261116.1';
+import {Updater,PORT_RE,pairOutput,fail} from './transport.mjs?v=installer-20261126.1';
 import {Package,logicalImage,sha256hex,validateStockPackage} from './fm1pkg.js?v=installer-20261116.1';
 import {BackupConnection,captureBackup,bkPack,bkCrc} from './fm1backup.js?v=installer-20261116.1';
 import {parseInfo} from './midi.mjs?v=installer-20261116.1';

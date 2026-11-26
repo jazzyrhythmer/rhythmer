@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Stage-weighted overall progress; only protocol-confirmed completion reaches 100%.
-const DEFINITIONS=[['prepare','Check integrated package',8],['device','Identify the FM-1',5],['backup','Prepare musical backup',7],['review','Final confirmation',5],['stage','Stage update loader',10],['loader','Reconnect update loader',5],['write','Transfer firmware package',49],['reboot','Reconnect firmware',5],['identity','Verify firmware identity',5],['final','Verify installed package',1]];
+const DEFINITIONS=[['prepare','Check integrated package',8],['device','Identify the keyboard',5],['backup','Prepare musical backup',7],['review','Check consent & backup',5],['stage','Stage update loader',10],['loader','Reconnect update loader',5],['write','Transfer firmware package',49],['reboot','Reconnect firmware',5],['identity','Verify firmware identity',5],['final','Verify installed package',1]];
 export class InstallProgress{
  constructor(now=()=>performance.now()){this.now=now;this.configure();this.reset();}
  configure({mode='rhythmer',resume=false}={}){

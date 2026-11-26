@@ -1,8 +1,10 @@
-import {fetchChecked} from './network.mjs?v=installer-20261116.1';
-import {INSTALLER_REVISION,validateOfficial,recoveryPolicy,stockName,deviceSummary,environment,failureDetails} from './install-safety.mjs?v=installer-20261116.1';
+import {mountConsent,requireConsent,downloadBackup,ready as consentReady} from './start-consent.mjs?v=20261126.1';
+mountConsent();
+import {fetchChecked} from './network.mjs?v=installer-20261126.1';
+import {INSTALLER_REVISION,validateOfficial,recoveryPolicy,stockName,deviceSummary,environment,failureDetails} from './install-safety.mjs?v=installer-20261126.1';
 // SPDX-License-Identifier: GPL-3.0-only
-import {DeviceUpdater,inspect,backup,authorize,validateStockPackage,validateInstallBundle,transfer,verifyRhythmer,verifyEmbeddedBanks,confirmSource} from './core.mjs?v=installer-20261116.1';
-import {mountProgress} from './progress.mjs?v=installer-20261116.1';
+import {DeviceUpdater,inspect,backup,authorize,validateStockPackage,validateInstallBundle,transfer,verifyRhythmer,verifyEmbeddedBanks,confirmSource} from './core.mjs?v=installer-20261126.1';
+import {mountProgress} from './progress.mjs?v=installer-20261126.1';
 const $=s=>document.querySelector(s),mode=new URLSearchParams(location.search).get('mode')==='stock'?'stock':'rhythmer';
 let manifest,target,recovery,source,up,access,officialOverride=null,lastError=null,working=false,writing=false,backupReady=false,bundleReady=false,releaseLock,heartbeat,channel;
 document.body.dataset.mode=mode;
@@ -15,7 +17,7 @@ function updateReport(){if(reportURL)URL.revokeObjectURL(reportURL);reportURL=UR
 function checkpoint(){try{return JSON.parse(sessionStorage.getItem(checkpointKey));}catch{return null;}}
 function allowed(preparing=false){try{return bundleReady&&authorize({mode,source,recovery,target,backupSaved:preparing||(backupReady&&$('#backup-saved').checked),ack:preparing||$('#ack').checked,checkpoint:checkpoint()});}catch{return false;}}
 function refresh(){
- $('#start').disabled=working||!bundleReady;$('#connect').disabled=working||!!source;$('#disconnect').disabled=working||!source;
+ $('#start').disabled=working||!bundleReady||!consentReady();$('#connect').disabled=working||!!source;$('#disconnect').disabled=working||!source;
  $('#backup').disabled=working||!source||!['custom','rhythmer','jazzy'].includes(source.kind);
  $('#backup-saved').disabled=working||!backupReady;$('#stock-file').disabled=working;$('#stock-version').disabled=working;
  $('#review').disabled=working||!allowed(true);
@@ -72,7 +74,7 @@ async function captureMusic(){
  const archive=await backup(source,(n,total)=>{if(transferView.model.status==='running')transferView.bytes('backup',n,total,'Reading and CRC-checking the musical archive.');$('#backup-status').textContent=`Reading archive: ${n.toLocaleString()} / ${total.toLocaleString()} bytes`;});
  if(backupURL)URL.revokeObjectURL(backupURL);backupURL=URL.createObjectURL(new Blob([JSON.stringify(archive,null,2)],{type:'application/json'}));
  const a=$('#backup-download');a.href=backupURL;a.download=`${source.kind}-before-${mode}-${new Date().toISOString().slice(0,10)}.json`;a.hidden=false;
- backupReady=true;$('#backup-status').textContent=`${archive.objects.length} objects read; all CRCs verified. Save the archive in the final review.`;log('Complete musical archive ready for download; final review requires acknowledgement of saving it.');
+ backupReady=true;$('#backup-status').textContent=`${archive.objects.length} objects read; all CRCs verified. Backup is ready; its download is requested automatically before transfer.`;log('Complete musical archive ready for download; automatic download will be requested before transfer.');
 }
 $('#connect').onclick=()=>busy(connectDevice);
 $('#disconnect').onclick=()=>{if(working)return;closeConnection();$('#device-status').textContent='Not connected.';state('Disconnected.');refresh();};
@@ -92,11 +94,9 @@ async function review(){
  if(!allowed(true)||!backupReady)return;const expectedSource=source,expectedTarget=target;
  const isResume=source.kind==='loader';$('#confirm-title').textContent=isResume?'Resume this update?':mode==='stock'?'Return this FM-1 to '+stockName(target.product)+'?':'Install Rhythmer?';
  $('#confirm-detail').textContent=`Source: ${source.id.text} (${source.input.name}). Target: ${target.product}. SHA-256: ${target.sha256}. ${mode==='stock'?'The selected unmodified '+stockName(target.product)+' image will be written. Custom projects are not imported into stock.':'This integrated package includes Amen (A) and the corrected two-bar Think drum edit (B). It replaces factory audio in A/B during the firmware transfer.'} ${isResume?'Explicit update-loader resume.':''}`;
- $('#confirm-risk').checked=false;$('#confirm-backup').checked=false;$('#confirm-notice').checked=false;$('#confirm-audio-rights').checked=false;$('#confirm-audio-row').hidden=mode==='stock';$('#confirm-v15').checked=false;$('#confirm-v15-row').hidden=mode==='stock';$('#confirm-write').disabled=true;
- const archive=$('#confirm-download');archive.hidden=!backupURL||!['custom','rhythmer','jazzy'].includes(source.kind);if(!archive.hidden){archive.href=backupURL;archive.download=$('#backup-download').download;}
- $('#confirm-backup-label').textContent=archive.hidden?'This stock firmware or loader has no compatible archive export. I have kept earlier backups and understand existing music/data may be lost.':'I downloaded the backup above and kept it outside this browser. I have separately retained original Break audio.';
- transferView.enter('review','Download the backup where available, read the notices, then confirm. No device write has started.');
- const d=$('#confirm');d.returnValue='';d.showModal();await new Promise(resolve=>d.addEventListener('close',resolve,{once:true}));if(d.returnValue!=='write'||!modalReady()){transferView.cancel();log('Installation review cancelled before device writes.');return;}
+ if(!backupReady)throw Error('Backup preparation did not complete.');
+ if(backupURL&&['custom','rhythmer','jazzy'].includes(source.kind))downloadBackup($('#backup-download'));
+ transferView.enter('review','Initial consent accepted. Device, package and available backup checked.');
  $('#ack').checked=true;$('#backup-saved').checked=true;$('#transfer-status').scrollIntoView({behavior:'smooth',block:'start'});
  await busy(async()=>{
   if(source!==expectedSource||target!==expectedTarget||!allowed())throw Error('Review expired. Inspect and review again.');
@@ -121,6 +121,7 @@ function onTransferProgress(stage,value,detail){
 }
 async function startFlow(){
  if(working||!bundleReady)return;
+ try{requireConsent();}catch(e){state(e.message);document.querySelector('#start-consent').scrollIntoView();return;}
  transferView.begin({mode,resume:source?.kind==='loader'});lastTransferStage=null;
  const prepared=await busy(async()=>{
   transferView.enter('device','Identifying the connected FM-1.');if(!source)await connectDevice();
@@ -141,3 +142,5 @@ $('#report').addEventListener('click',updateReport);
 transferView.render(true);updateReport();preload().catch(e=>{bundleReady=false;target=null;$('#build-status').textContent=e.message;state('Installation bundle unavailable: '+e.message);refresh();});refresh();
 
 document.addEventListener('visibilitychange',()=>{if(writing&&document.hidden)log('Installer tab hidden: background throttling can delay USB MIDI replies. Keep this page visible, the computer awake and USB/power connected.');});
+
+document.querySelectorAll('[data-start-check]').forEach(x=>x.addEventListener('change',refresh));

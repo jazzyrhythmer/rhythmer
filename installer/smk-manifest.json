@@ -1,0 +1,11 @@
+{
+  "name": "RHYTHMER",
+  "version": "0.1.2-smk2",
+  "product": "SMK-37 Pro_9748025",
+  "bytes": 968019,
+  "sha256": "477964eb1d26dac5d3e8d02af73f7c885f30a7f3d5e735fa13d8ec426f9cf345",
+  "url": "../downloads/RHYTHMER-OS-SMK37-Pro-0.1.2-smk2.fwsc",
+  "archive": "../downloads/RHYTHMER-OS-SMK37-Pro-0.1.2-smk2.zip",
+  "guide": "../downloads/RHYTHMER-OS-SMK37-Pro-0.1.2-smk2-guide.md",
+  "flashBytes": 958464
+}
