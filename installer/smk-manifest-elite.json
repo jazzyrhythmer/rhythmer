@@ -1,0 +1,13 @@
+{
+  "name": "RHYTHMER",
+  "version": "0.1.2-elite1",
+  "product": "SMK-37 Elite_9748027",
+  "updateFamily": 9,
+  "bytes": 968023,
+  "sha256": "9e3f78b675f806090132a4549ab331cd10866945b6b06ab32003f82932dc60cc",
+  "url": "../downloads/RHYTHMER-OS-SMK37-Elite-0.1.2-elite1.fwsc",
+  "flashBytes": 958464,
+  "guide": "../downloads/RHYTHMER-OS-SMK37-Elite-0.1.2-elite1-guide.md",
+  "archive": "../downloads/RHYTHMER-OS-SMK37-Elite-0.1.2-elite1.zip",
+  "source": "../downloads/RHYTHMER-OS-SMK37-Elite-0.1.2-elite1-source.tar.gz"
+}

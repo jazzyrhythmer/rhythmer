@@ -3,6 +3,7 @@
 import {Updater,PORT_RE,pairOutput,fail,sleep} from './transport.mjs?v=installer-20261126.1';
 export class UniqueUpdater extends Updater {
  get deviceModel(){return 'FM-1';}
+ acceptsIdentity(id){return id.model===this.deviceModel||id.model==='ota-'+this.deviceModel;}
  async find(filter,{tries=1}={}){
   const access=this.access;
   for(let attempt=0;attempt<tries;attempt++){
@@ -21,7 +22,7 @@ export class UniqueUpdater extends Updater {
      const found=await super.find(()=>true,{tries:1,others:false});
      scans.push(...this.lastScan.ports);
      if(!found)continue;
-     const modelOK=found.id.model===this.deviceModel||found.id.model==='ota-'+this.deviceModel;
+     const modelOK=this.acceptsIdentity(found.id);
      if(modelOK&&(!filter||filter(found.id)))responses.push(found);
      else{if(!modelOK)wrongModels.push(found.id.text);found.link.close();}
     }
