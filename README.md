@@ -56,6 +56,14 @@ The current public beta is **v0.1.2-dev1 · build 20261109.18 · FM-1_748023**. 
 
 See [exact build validation](RELEASE-VALIDATION.json) for emulator, editor and installer test scope. Dense arrangements can still exceed the device's audio budget. Mute tracks, reduce simultaneous notes or simplify FX if needed.
 
+### Also available for M-VAVE SMK-37 Pro
+
+**RHYTHMER OS for SMK-37 Pro** is a separate early beta. Build grooves with dedicated drum kits, generate patterns and manipulate chopped breaks live. The hardware has 37 velocity-sensitive keys, eight knobs, 16 pads and four faders.
+
+Back up your projects and settings before installing or switching firmware. The SMK-37 Pro guide covers controls, backup and recovery.
+
+[SMK-37 Pro guide](https://jazzyrhythmer.github.io/rhythmer/#smk37) · [SMK-37 Pro installer](https://jazzyrhythmer.github.io/rhythmer/installer/?board=smk37)
+
 ## Samples, credits and license
 
 Source is GPL-3.0-only; original component licenses and notices remain. The active firmware is in `rhythmer/`. See `docs/THIRD_PARTY.md`, `rhythmer/LICENSING.md` and the component license directories.
